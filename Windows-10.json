@@ -1,0 +1,78 @@
+{
+  "variables": {
+    "proxmox_host": null,
+    "proxmox_node": null,
+    "proxmox_api_user": null,
+    "proxmox_api_password": null
+  },
+  "sensitive-variables": ["proxmox_api_password"],
+  "builders": [
+    {
+      "type": "proxmox-iso",
+      "proxmox_url": "https://{{ user `proxmox_host` }}/api2/json",
+      "insecure_skip_tls_verify": true,
+      "username": "{{ user `proxmox_api_user` }}",
+      "password": "{{ user `proxmox_api_password` }}",
+      "template_description": "Windows 10 cloud-init template. Built on {{ isotime \"2006-01-02T15:04:05Z\" }}",
+      "node": "{{user `proxmox_node`}}",
+      "scsi_controller": "virtio-scsi-pci",
+      "iso_file": "local:iso/SW_DVD9_Win_Pro_10_21H1.4_64BIT_English_Pro_Ent_EDU_N_MLF_X22-81291.ISO",
+      "http_directory": "./",
+      "boot_wait": "10s",
+      "unmount_iso": true,
+      "cloud_init": true,
+      "cloud_init_storage_pool": "storage0",
+      "vm_name": "Windows-10",
+      "memory": "16384",
+      "cpu_type": "kvm64",
+      "sockets": "1",
+      "cores": "4",
+      "os": "win10",
+      "communicator": "winrm",
+      "winrm_username": "vagrant",
+      "winrm_password": "vagrant",
+      "winrm_insecure": true,
+      "winrm_use_ssl": false,
+      "winrm_port": 5985,
+      "winrm_timeout": "60m",
+
+      "additional_iso_files": [
+        {
+          "device": "sata3",
+          "iso_file": "local:iso/Autounattend.iso",
+          "unmount": true
+        },
+        {
+          "device": "sata4",
+          "iso_file": "local:iso/virtio-win-0.1.208.iso",
+          "unmount": true
+        }
+      ],
+      "network_adapters": [
+        {
+          "model": "e1000",
+          "bridge": "vmbr0",
+          "firewall": true
+        }
+      ],
+      "disks": [
+        {
+          "type": "sata",
+          "disk_size": "60G",
+          "storage_pool": "storage0",
+          "storage_pool_type": "zfspool",
+          "format": "qcow2"
+        }
+      ]
+
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "windows-shell",
+      "scripts": [
+        "scripts/sysprep.bat"
+      ]
+    }
+  ]
+}
